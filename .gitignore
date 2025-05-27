@@ -1,0 +1,18 @@
+# PyCharm specific files and directories
+.idea/
+*.iml
+*.iws
+*.ipr
+.project
+.vscode/ # Include if you ever use VSCode alongside PyCharm
+.DS_Store # macOS specific
+Thumbs.db # Windows specific
+
+# Python virtual environments
+venv/
+env/
+.venv/
+.pyenv/
+*/venv/
+*/env/
+*/.venv/
