@@ -28,7 +28,7 @@ pipeline {
                     def uniquePngFile = "diagrams/${env.BASE_DIAGRAM_NAME}_${env.BUILD_ID}.png"
 
                     if (fileExists(uniquePumlFile)) {
-                        sh "docker run --rm -v $(pwd):/src plantuml/plantuml:1.2024.5 java -jar /plantuml.jar -tpng /src/${uniquePumlFile} -o /src/diagrams/"
+                        sh "docker run --rm -v \$(pwd):/src plantuml/plantuml:1.2024.5 java -jar /plantuml.jar -tpng /src/${uniquePumlFile} -o /src/diagrams/"
                     } else {
                         error "ERROR: ${uniquePumlFile} not found. Cannot render diagram. Check 'Generate PlantUML File' stage logs."
                     }
