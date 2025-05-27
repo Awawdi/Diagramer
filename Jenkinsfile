@@ -1,24 +1,36 @@
 pipeline {
     agent any
 
-    stages {
+    environment {
+        BUILD_ID = "${env.BUILD_ID}"
+        BASE_DIAGRAM_NAME = "api_interaction_diagram"
+    }
 
-        stage('Generate PlantUML') {
+    stages {
+        stage('Setup Environment') {
             steps {
-                script {
-                    sh 'python3 -m src.api_call_generator'
-                }
+                sh 'python3 --version'
+                sh 'pip3 install --upgrade pip'
+                sh 'pip3 install -r requirements.txt'
+            }
+        }
+
+        stage('Generate PlantUML File') {
+            steps {
+                sh 'python3 -m src.main'
             }
         }
 
         stage('Render Diagram') {
             steps {
                 script {
-                    if (fileExists('diagrams/api_interaction_diagram.puml')) {
-                        sh 'docker run --rm -v $(pwd):/src plantuml/plantuml:1.2024.5 java -jar /plantuml.jar -tpng /src/diagrams/api_interaction_diagram.puml -o /src/diagrams/'
-                        echo 'PlantUML diagram rendered successfully.'
+                    def uniquePumlFile = "diagrams/${env.BASE_DIAGRAM_NAME}_${env.BUILD_ID}.puml"
+                    def uniquePngFile = "diagrams/${env.BASE_DIAGRAM_NAME}_${env.BUILD_ID}.png"
+
+                    if (fileExists(uniquePumlFile)) {
+                        sh "docker run --rm -v $(pwd):/src plantuml/plantuml:1.2024.5 java -jar /plantuml.jar -tpng /src/${uniquePumlFile} -o /src/diagrams/"
                     } else {
-                        error 'ERROR: api_interaction_diagram.puml not found. Cannot render diagram.'
+                        error "ERROR: ${uniquePumlFile} not found. Cannot render diagram. Check 'Generate PlantUML File' stage logs."
                     }
                 }
             }
@@ -26,17 +38,21 @@ pipeline {
 
         stage('Archive Artifacts') {
             steps {
-                archiveArtifacts artifacts: 'diagrams/*.puml, diagrams/*.png', fingerprint: true
+                script {
+                    def uniquePumlFile = "diagrams/${env.BASE_DIAGRAM_NAME}_${env.BUILD_ID}.puml"
+                    def uniquePngFile = "diagrams/${env.BASE_DIAGRAM_NAME}_${env.BUILD_ID}.png"
+                    archiveArtifacts artifacts: "${uniquePumlFile}, ${uniquePngFile}", fingerprint: true
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline finished successfully!'
+            echo 'Pipeline finished successfully!.'
         }
         failure {
-            echo 'Pipeline failed. Check logs for details.'
+            echo 'Pipeline failed!.'
         }
     }
 }
