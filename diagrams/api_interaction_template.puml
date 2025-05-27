@@ -1,0 +1,7 @@
+@startuml
+actor {{CALLER_NAME}}
+participant "{{TARGET_DOMAIN}}" as {{TARGET_ALIAS}}
+
+{{CALLER_NAME}} -> {{TARGET_ALIAS}}: {{METHOD}} {{URL}}
+{{TARGET_ALIAS}} --> {{CALLER_NAME}}: {{RESPONSE_CODE}}
+@enduml

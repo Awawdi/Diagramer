@@ -1,0 +1,7 @@
+@startuml
+actor MyOrchestrationService
+participant "dummyjson.com" as dummyjson_com
+
+MyOrchestrationService -> dummyjson_com: POST https://dummyjson.com/auth/login
+dummyjson_com --> MyOrchestrationService: 200 OK
+@enduml
