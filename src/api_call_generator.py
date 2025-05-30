@@ -1,4 +1,5 @@
 import os
+import sys
 
 from src.utils import extract_domain_and_alias
 
@@ -15,7 +16,7 @@ class DiagramGenerator:
         caller_name: str,
         method: str,
         url: str,
-        response_code: str = "200 OK"
+        response_code: int
     ) -> str:
         """
         Reads a PlantUML template, injects API call details, and saves the result.
@@ -23,12 +24,11 @@ class DiagramGenerator:
         """
         domain, target_alias = extract_domain_and_alias(url)
 
-        # Read the template file
         try:
             with open(template_path, "r") as f:
                 template_content = f.read()
         except FileNotFoundError:
-            print(f"Error: Template file not found at {template_path}")
+            print(f"Error: Template file not found at {template_path}",file=sys.stderr)
             return ""
 
         # Perform replacements using the extracted values
@@ -37,7 +37,7 @@ class DiagramGenerator:
         final_puml_content = final_puml_content.replace("{{TARGET_ALIAS}}", target_alias)
         final_puml_content = final_puml_content.replace("{{METHOD}}", method.upper())
         final_puml_content = final_puml_content.replace("{{URL}}", url)
-        final_puml_content = final_puml_content.replace("{{RESPONSE_CODE}}", response_code)
+        final_puml_content = final_puml_content.replace("{{RESPONSE_CODE}}", str(response_code))
 
         os.makedirs(os.path.dirname(output_puml_path), exist_ok=True)
         with open(output_puml_path, "w") as f:

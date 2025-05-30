@@ -1,5 +1,5 @@
-# src/utils.py
-
+import sys
+from enum import Enum
 from urllib.parse import urlparse
 
 def extract_domain_and_alias(url: str) -> tuple[str, str]:
@@ -11,21 +11,26 @@ def extract_domain_and_alias(url: str) -> tuple[str, str]:
         parsed_url = urlparse(url)
         domain = parsed_url.netloc
 
-        # Create a PlantUML-safe alias: remove www., replace dots with underscores, remove port
-        target_alias = domain.replace("www.", "").replace(".", "_").split(':')[0]
+        cleaned_domain = domain.replace("www.", "")
+        base_alias = cleaned_domain.split(':')[0].replace(".", "_")
+        plantuml_alias = ''.join(c for c in base_alias if c.isalnum() or c == '_')
 
-        # Ensure alias starts with a letter and is alphanumeric
-        if not target_alias:
-            target_alias = "ExternalAPI" # Fallback if domain is empty
+        # If alias is empty or starts with a non-alphabetic character, prefix it
+        if not plantuml_alias or not plantuml_alias[0].isalpha():
+            plantuml_alias = "Service_" + plantuml_alias if plantuml_alias else "ExternalService"
+            if plantuml_alias[0] == '_':
+                plantuml_alias = "Service" + plantuml_alias
+        return domain, plantuml_alias
 
-        # If alias starts with a number or invalid char, prepend 'A'
-        if target_alias and not target_alias[0].isalpha():
-            target_alias = "A" + target_alias
-
-        # Remove any non-alphanumeric characters (except underscore)
-        target_alias = ''.join(c for c in target_alias if c.isalnum() or c == '_')
-
-        return domain, target_alias
     except Exception as e:
-        print(f"Warning: Could not parse URL '{url}'. Error: {e}. Using generic names.")
-        return url, "ExternalAPI" # Fallback in case of parsing errors
+        print(f"Warning: Could not parse URL '{url}' with error: {e}", file=sys.stderr)
+        return url, "GenericService"
+
+class APIMethods(Enum):
+    """
+    Enum for HTTP methods used in API calls.
+    """
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
